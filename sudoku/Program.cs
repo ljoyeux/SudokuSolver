@@ -48,6 +48,7 @@ namespace sudoku
             var sudoku = new Sudoku(s);
             
             Console.WriteLine(sudoku.Solve());
+            Console.WriteLine(sudoku);
         }
     }
 }

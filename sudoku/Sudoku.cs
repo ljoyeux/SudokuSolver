@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Security.Cryptography;
 using ExtensionMethods;
 
 namespace ExtensionMethods
@@ -14,6 +16,17 @@ namespace ExtensionMethods
                 checked { num1 *= num2; }
             return num1;
         }
+
+//        public static T Min<T>(this IEnumerable<T> source, Func<T, long> selector)
+//        {
+//            var enumerator = source.GetEnumerator();
+//            T min = default(T);
+//            foreach (var i in source)
+//            {
+//            }
+//            
+//            return min;
+//        }
         
     }
 
@@ -24,6 +37,13 @@ namespace sudoku
     
     internal class CaseSudoku : List<int>
     {
+        public CaseSudoku()
+        {
+        }
+
+        public CaseSudoku(IEnumerable<int> collection) : base(collection)
+        {
+        }
     }
     
     public class Sudoku
@@ -31,9 +51,12 @@ namespace sudoku
         private IList<CaseSudoku> _cases;
         
         private IList<IList<CaseSudoku>> _lists;
+        private int _depth;
 
-        public Sudoku(Sudoku sudoku)
+        public Sudoku(Sudoku sudoku, int depth)
         {
+
+            _depth = depth;
             _cases = new List<CaseSudoku>();
             foreach (var sudokuCase in sudoku._cases)
             {
@@ -186,46 +209,89 @@ namespace sudoku
                         return this;
                     }
 
-                    Console.WriteLine(_cases.Where(cs => cs.Count >= 2 && cs.Count<=3).Select(cs => cs.Count).Mul());
-                    Console.WriteLine(string.Join(" x ", _cases.Where(cs => cs.Count > 1).Select(cs => cs.Count)));
-                    var counters = _cases.GroupBy(cs => cs.Count).ToDictionary(x => x.Key, x => x.AsEnumerable().Count());
-                    Console.WriteLine(string.Join(", ", counters.Select(x=> x.Key + ": " + x.Value)));
-                    Console.WriteLine(counters.Values.Sum());
-                    Console.WriteLine(_cases.Count(cs => cs.Count == 2));
-                    return null;
-                    
-                    var unsolvedCaseSudoku = _cases.FirstOrDefault(cs => cs.Count > 1);
-                    if (unsolvedCaseSudoku == null || unsolvedCaseSudoku.Count==0)
+                    if (_cases.Any(cs => cs.Count == 0))
                     {
                         return null;
                     }
 
-                    var index = _cases.IndexOf(unsolvedCaseSudoku);
-                    if (index == -1)
-                    {
-                        Console.WriteLine("Erreur");
-                        throw new Exception("Erreur");
-                    }
+//                    Console.WriteLine(_cases.Where(cs => cs.Count >= 2 && cs.Count<=3).Select(cs => cs.Count).Mul());
+//                    Console.WriteLine(string.Join(" x ", _cases.Where(cs => cs.Count > 1).Select(cs => cs.Count)));
+//                    var counters = _cases.GroupBy(cs => cs.Count).ToDictionary(x => x.Key, x => x.AsEnumerable().Count());
+//                    Console.WriteLine(string.Join(", ", counters.Select(x=> x.Key + ": " + x.Value)));
+//                    Console.WriteLine(counters.Values.Sum());
+//                    Console.WriteLine(_cases.Count(cs => cs.Count == 2));
+                    Console.WriteLine(string.Join(", ", GetLists().Select(x => x.Count(xx=>xx.Count>1))));
+                    var tuples = GetLists().Select(x =>
+                        new Tuple<IList<CaseSudoku>, long>(x,
+                            x.Where(xx => xx.Count > 1).Select(xx => xx.Count).Mul()));
 
-                    var forcedCaseSudoku = new CaseSudoku();
-                    _cases[index] = forcedCaseSudoku;
-                    forcedCaseSudoku.Add(0);
-                    
-                    foreach (var n in unsolvedCaseSudoku)
+                    var min = tuples.Min(cs => cs.Item2);
+                    var first = tuples.Where(cs => cs.Item2 == min).First().Item1;
+                    var els = first.Where(cs => cs.Count > 1).ToList();
+
+                    var save = new List<CaseSudoku>();
+                    foreach (var v in els)
                     {
-                        forcedCaseSudoku[0] = n;
-                        _lists = null;
-//                        Console.WriteLine(forcedCaseSudoku.Count);
-//                        Console.WriteLine(string.Join(", ", _cases.Select(cc=>cc.Count)));
-                        var check = Check();
-                        Sudoku s = new Sudoku(this).Solve();
+                        save.Add(new CaseSudoku(v));
+                        v.Clear();
+                        v.Add(0);
+                    }
+                    
+                    Console.WriteLine(string.Join(" | " , els.Select(cs=>string.Join(", ", cs))));
+
+
+                    for (var i = 0; i < save.Count; i++)
+                    {
+                        els[i].Clear();
+                        els[i].AddRange(save[i]);
+                    }
+                    
+                    return null;
+                    // la meilleure approche est de sélectionner que les alternatives binaires. 
+
+                    if (_depth > 0)
+                    {
+                        return null;
+                    }
+                    var listBinary = _cases.Where(cs => cs.Count == 2).ToList();
+                    if (listBinary.Count == 0)
+                    {
+//                        Console.WriteLine("No binary alternatives");
+                        return null;
+                    }
+                    
+                    var nbBinary = listBinary.Count;
+                    var saveBinary = new List<CaseSudoku>();
+                    listBinary.ForEach(l =>
+                    {
+                        saveBinary.Add(new CaseSudoku(l));
+                        l.Clear();
+                        l.Add(0);
+                    });
+                    
+                    var nbIterations = 1 << nbBinary;
+                    
+                    Console.WriteLine(nbBinary + " :  " + _depth);
+
+                    for (var i = 0; i < nbIterations; i++)
+                    {
+                        for (var b = 0; b < nbBinary; b++)
+                        {
+                            listBinary[b][0] = ((i & b) != 0) ? saveBinary[b][1] : saveBinary[b][0];
+                        }
+                        
+                        var s = new Sudoku(this, _depth+1).Solve();
                         if (s != null)
                         {
                             return s;
-                        }
+                        }                        
                     }
-
-                    _cases[index] = unsolvedCaseSudoku;
+                    
+                    for (var i = 0; i < nbBinary; i++)
+                    {
+                        listBinary[i].Clear();
+                        listBinary[i].AddRange(saveBinary[i]);
+                    }
                 }
 
                 c = newCount;

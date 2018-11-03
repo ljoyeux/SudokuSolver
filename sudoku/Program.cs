@@ -22,7 +22,7 @@ namespace sudoku
 //                "xxx|519|4x2\n" +
 //                "2xx|7x6|xxx\n";
 
-            "x72|xx5|4xx\n" +
+                "x72|xx5|4xx\n" +
                 "6xx|x2x|xxx\n" +
                 "4xx|x3s|x5x\n" +
 

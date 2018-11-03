@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography;
 using ExtensionMethods;
@@ -9,11 +10,11 @@ namespace ExtensionMethods
 {
     public static class EnumExtensions
     {
-        public static long Mul(this IEnumerable<int> source)
+        public static long? Mul(this IEnumerable<int> source)
         {
-            long num1 = 1;
+            long? num1 = null;
             foreach (var num2 in source)
-                checked { num1 *= num2; }
+                checked { num1 = (num1!=null) ? num1*num2 : num2; }
             return num1;
         }
 
@@ -220,14 +221,23 @@ namespace sudoku
 //                    Console.WriteLine(string.Join(", ", counters.Select(x=> x.Key + ": " + x.Value)));
 //                    Console.WriteLine(counters.Values.Sum());
 //                    Console.WriteLine(_cases.Count(cs => cs.Count == 2));
-                    Console.WriteLine(string.Join(", ", GetLists().Select(x => x.Count(xx=>xx.Count>1))));
+//                    Console.WriteLine(string.Join(", ", GetLists().Select(x => x.Count(xx=>xx.Count>1))));
                     var tuples = GetLists().Select(x =>
-                        new Tuple<IList<CaseSudoku>, long>(x,
+                        new Tuple<IList<CaseSudoku>, long?>(x,
                             x.Where(xx => xx.Count > 1).Select(xx => xx.Count).Mul()));
+                    
+                    Console.WriteLine("nb " + string.Join("," , tuples.Select(xx=>xx.Item2)));
+                    if (!tuples.Any())
+                    {
+                        return null;
+                    }
 
                     var min = tuples.Min(cs => cs.Item2);
                     var first = tuples.Where(cs => cs.Item2 == min).First().Item1;
                     var els = first.Where(cs => cs.Count > 1).ToList();
+                    var limits = els.Select(e => e.Count).ToArray();
+                    var nbEls = els.Count;
+                    Console.WriteLine("depth : " + _depth + ", " + string.Join(" | " , els.Select(cs=>string.Join(", ", cs))));
 
                     var save = new List<CaseSudoku>();
                     foreach (var v in els)
@@ -236,9 +246,47 @@ namespace sudoku
                         v.Clear();
                         v.Add(0);
                     }
-                    
-                    Console.WriteLine(string.Join(" | " , els.Select(cs=>string.Join(", ", cs))));
 
+                    var counters = new int[nbEls];
+                    
+                    IList<int> set = new List<int>();
+                    for (var iter=0;;)
+                    {
+                        set.Clear();
+                        var ok = true;
+                        for (var k = 0; k < nbEls; k++)
+                        {
+                            
+                            var v = save[k][counters[k]];
+                            if (set.Contains(v))
+                            {
+                                ok = false;
+                                break;
+                            }
+                            
+                            els[k][0] = v;
+                            set.Add(v);
+                        }
+
+//                        Console.WriteLine(string.Join(",", counters));
+                        if (ok && _depth<2)
+                        {
+                            Console.WriteLine("depth: " + _depth + ", iter : " + (iter++));
+                            Console.WriteLine(this);
+//                            Console.WriteLine("ok: " + string.Join(", ", set));
+                            var s = new Sudoku(this, _depth+1).Solve();
+                            if (s!=null)
+                            {
+                                return s;
+                            }
+                        }
+
+                        if (inc(counters, limits))
+                        {
+                            break;
+                        }
+                    }
+                    
 
                     for (var i = 0; i < save.Count; i++)
                     {
@@ -247,51 +295,6 @@ namespace sudoku
                     }
                     
                     return null;
-                    // la meilleure approche est de sélectionner que les alternatives binaires. 
-
-                    if (_depth > 0)
-                    {
-                        return null;
-                    }
-                    var listBinary = _cases.Where(cs => cs.Count == 2).ToList();
-                    if (listBinary.Count == 0)
-                    {
-//                        Console.WriteLine("No binary alternatives");
-                        return null;
-                    }
-                    
-                    var nbBinary = listBinary.Count;
-                    var saveBinary = new List<CaseSudoku>();
-                    listBinary.ForEach(l =>
-                    {
-                        saveBinary.Add(new CaseSudoku(l));
-                        l.Clear();
-                        l.Add(0);
-                    });
-                    
-                    var nbIterations = 1 << nbBinary;
-                    
-                    Console.WriteLine(nbBinary + " :  " + _depth);
-
-                    for (var i = 0; i < nbIterations; i++)
-                    {
-                        for (var b = 0; b < nbBinary; b++)
-                        {
-                            listBinary[b][0] = ((i & b) != 0) ? saveBinary[b][1] : saveBinary[b][0];
-                        }
-                        
-                        var s = new Sudoku(this, _depth+1).Solve();
-                        if (s != null)
-                        {
-                            return s;
-                        }                        
-                    }
-                    
-                    for (var i = 0; i < nbBinary; i++)
-                    {
-                        listBinary[i].Clear();
-                        listBinary[i].AddRange(saveBinary[i]);
-                    }
                 }
 
                 c = newCount;
@@ -334,6 +337,27 @@ namespace sudoku
         public int Count()
         {
             return _cases.Select(c => c.Count).Sum();
+        }
+
+        private static bool inc(int[] counters, int[] limits)
+        {
+            var nbEls = counters.Length;
+            
+            var k = 0 ;                
+            for (; k < nbEls; k++)
+            {
+                if (++counters[k] >= limits[k])
+                {
+                    counters[k] = 0;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            return k == nbEls;
+            
         }
     }
 }

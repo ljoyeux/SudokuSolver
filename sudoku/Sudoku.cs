@@ -216,70 +216,60 @@ namespace sudoku
                         return null;
                     }
 
-                    return null;
                     
-//                    var tuples = GetLists().Select(x =>
-//                        new Tuple<IList<CaseSudoku>, long?>(x,
-//                            x.Count(xx => xx.Count > 1)));
-//                    
+                    var tuples = GetLists().Select(x =>
+                        new Tuple<IList<CaseSudoku>, long?>(x,
+                            x.Count(xx => xx.Count > 1)))
+                        .Where(t=>t.Item2>0)
+                        .ToList();
+
 //                    Console.WriteLine("nb " + string.Join("," , tuples.Select(xx=>xx.Item2)));
-//                    if (!tuples.Any())
-//                    {
-//                        return null;
-//                    }
-//
-//                    var min = tuples.Max(cs => cs.Item2);
-//                    var first = tuples.First(cs => cs.Item2 == min).Item1;
-//                    foreach (var list in tuples)
-//                    {
-//                        Console.WriteLine(list.Item2);
-//                        var els = list.Item1.Where(cs => cs.Count > 1).ToList();
-//                        var alternatives = Iterate(els);
-//                        Console.WriteLine(string.Join(" | " , els.Select(cs=>string.Join(", ", cs))));
-//                        var merged = Merge(alternatives);
-//                        Console.WriteLine(string.Join(" | ", merged.Select(m=>string.Join(", ", m))));
-//                        Console.WriteLine("----------------");
-//                    }
-//
-//                    return null;
-//                    var els = first.Where(cs => cs.Count > 1).ToList();
-//                    var alternatives = Iterate(els);
-//                    Console.WriteLine("depth : " + _depth);
-//                    Console.WriteLine(string.Join(" | " , els.Select(cs=>string.Join(", ", cs))));
-////                    Console.WriteLine(string.Join("|", alternatives.Select(i => string.Join(",", i))));
-//
-//                    var merged = Merge(alternatives);
-//                    Console.WriteLine(string.Join(" | ", merged.Select(m=>string.Join(", ", m))));
+                    if (!tuples.Any())
+                    {
+                        return null;
+                    }
+
+                    var min = tuples.Min(cs => cs.Item2);
+                    var first = tuples.First(cs => cs.Item2 == min).Item1;
+                    var els = first.Where(cs => cs.Count > 1).ToList();
+                    var alternatives = Iterate(els);
                     
-//                    var save = new List<CaseSudoku>();
-//                    foreach (var v in els)
-//                    {
-//                        save.Add(new CaseSudoku(v));
-//                        v.Clear();
-//                        v.Add(0);
-//                    }
-//
-//                    foreach (var entry in alternatives)
-//                    {
-//                        for (var i = 0; i < entry.Length; i++)
-//                        {
-//                            els[i][0] = entry[i];
-//                        } 
-//                        
-//                        var s = new Sudoku(this, _depth+1).Solve();
-//                        if (s!=null)
-//                        {
-//                            return s;
-//                        }
-//                    }
-//
-//                    for (var i = 0; i < save.Count; i++)
-//                    {
-//                        els[i].Clear();
-//                        els[i].AddRange(save[i]);
-//                    }
-//                    
-//                    return null;
+                    if (_depth > 30)
+                    {
+                        Console.WriteLine("nb " + string.Join("," , tuples.Select(xx=>xx.Item2)));
+                        Console.WriteLine("Error " + GetLists().Count);
+                        return null;
+                    }
+                    
+                    var save = new List<CaseSudoku>();
+                    foreach (var v in els)
+                    {
+                        save.Add(new CaseSudoku(v));
+                        v.Clear();
+                        v.Add(0);
+                    }
+                    
+                    foreach (var entry in alternatives)
+                    {
+                        for (var i = 0; i < entry.Length; i++)
+                        {
+                            els[i][0] = entry[i];
+                        } 
+                        
+                        var s = new Sudoku(this, _depth+1).Solve();
+                        if (s!=null)
+                        {
+                            return s;
+                        }
+                    }
+                    
+                    for (var i = 0; i < save.Count; i++)
+                    {
+                        els[i].Clear();
+                        els[i].AddRange(save[i]);
+                    }
+                    
+                    return null;                 
                 }
 
                 c = newCount;
@@ -348,7 +338,7 @@ namespace sudoku
         }
 
 
-        private static List<int[]> Iterate(IReadOnlyList<CaseSudoku> els)
+        private static List<int[]> Iterate(in IReadOnlyList<CaseSudoku> els)
         {
             var limits = els.Select(e => e.Count).ToArray();
             var nbEls = els.Count;
@@ -398,7 +388,7 @@ namespace sudoku
             return list;
         }
 
-        private List<List<int>> Merge(IReadOnlyList<int[]> list)
+        private static List<List<int>> Merge(in IReadOnlyList<int[]> list)
         {
             var merged = new List<List<int>>();
             
@@ -424,7 +414,7 @@ namespace sudoku
             return merged;
         }
         
-        private static bool Inc(IList<int> counters, IReadOnlyList<int> limits)
+        private static bool Inc(in IList<int> counters, in IReadOnlyList<int> limits)
         {
             var nbEls = counters.Count;
             

@@ -34,17 +34,29 @@ namespace sudoku
 //                "xxx|x1x|xx4\n" +
 //                "xx7|4xx|92x";
 
-                "x3x|xx5|xx2\n" +
-                "1xx|34x|xxx\n" +
-                "xx8|xxx|3xx\n" +
+//                "x3x|xx5|xx2\n" +
+//                "1xx|34x|xxx\n" +
+//                "xx8|xxx|3xx\n" +
+//
+//                "5x9|xxx|x1x\n" +
+//                "7xx|x1x|xx4\n" +
+//                "x1x|xxx|2x5\n" +
+//
+//                "xx7|xxx|8xx\n" +
+//                "xxx|x23|xx6\n" +
+//                "8xx|6xx|x2x";
+            
+                "xxx|x14|xx9\n" +
+                "4x5|xxx|32x\n" +
+                "xx9|x3x|41x\n" +
 
-                "5x9|xxx|x1x\n" +
-                "7xx|x1x|xx4\n" +
-                "x1x|xxx|2x5\n" +
+                "xx2|64x|x7x\n" +
+                "xxx|x8x|xxx\n" +
+                "x6x|x29|5xx\n" +
 
-                "xx7|xxx|8xx\n" +
-                "xxx|x23|xx6\n" +
-                "8xx|6xx|x2x";
+                "x54|x9x|1xx\n" +
+                "x93|xxx|8x5\n" +
+                "8xx|45x|xxx";
 
             List<int> els = new List<int> (new[] {1, 2, 3, 4, 5, 6, 7, 8, 9});
             var groupBy = els.GroupBy(c => c > 5 ? 0 : 1);
@@ -60,7 +72,7 @@ namespace sudoku
             var sudoku = new Sudoku(s);
             
             Console.WriteLine(sudoku.Solve());
-            Console.WriteLine(sudoku);
+//            Console.WriteLine(sudoku);
         }
     }
 }

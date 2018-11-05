@@ -22,17 +22,29 @@ namespace sudoku
 //                "xxx|519|4x2\n" +
 //                "2xx|7x6|xxx\n";
 
-                "x72|xx5|4xx\n" +
-                "6xx|x2x|xxx\n" +
-                "4xx|x3s|x5x\n" +
+//                "x72|xx5|4xx\n" +
+//                "6xx|x2x|xxx\n" +
+//                "4xx|x3x|x5x\n" +
+//
+//                "x58|xx2|xx1\n" +
+//                "x6x|xxx|x8x\n" +
+//                "7xx|5xx|23x\n" +
+//
+//                "x4x|x9x|xx5\n" +
+//                "xxx|x1x|xx4\n" +
+//                "xx7|4xx|92x";
 
-                "x58|xx2|xx1\n" +
-                "x6x|xxx|x8x\n" +
-                "7xx|5xx|23x\n" +
+                "x3x|xx5|xx2\n" +
+                "1xx|34x|xxx\n" +
+                "xx8|xxx|3xx\n" +
 
-                "x4x|x9x|xx5\n" +
-                "xxx|x1x|xx4\n" +
-                "xx7|4xx|92x";
+                "5x9|xxx|x1x\n" +
+                "7xx|x1x|xx4\n" +
+                "x1x|xxx|2x5\n" +
+
+                "xx7|xxx|8xx\n" +
+                "xxx|x23|xx6\n" +
+                "8xx|6xx|x2x";
 
             List<int> els = new List<int> (new[] {1, 2, 3, 4, 5, 6, 7, 8, 9});
             var groupBy = els.GroupBy(c => c > 5 ? 0 : 1);

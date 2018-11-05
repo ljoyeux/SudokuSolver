@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Security.Cryptography;
 using ExtensionMethods;
 
@@ -215,86 +216,70 @@ namespace sudoku
                         return null;
                     }
 
-//                    Console.WriteLine(_cases.Where(cs => cs.Count >= 2 && cs.Count<=3).Select(cs => cs.Count).Mul());
-//                    Console.WriteLine(string.Join(" x ", _cases.Where(cs => cs.Count > 1).Select(cs => cs.Count)));
-//                    var counters = _cases.GroupBy(cs => cs.Count).ToDictionary(x => x.Key, x => x.AsEnumerable().Count());
-//                    Console.WriteLine(string.Join(", ", counters.Select(x=> x.Key + ": " + x.Value)));
-//                    Console.WriteLine(counters.Values.Sum());
-//                    Console.WriteLine(_cases.Count(cs => cs.Count == 2));
-//                    Console.WriteLine(string.Join(", ", GetLists().Select(x => x.Count(xx=>xx.Count>1))));
-                    var tuples = GetLists().Select(x =>
-                        new Tuple<IList<CaseSudoku>, long?>(x,
-                            x.Where(xx => xx.Count > 1).Select(xx => xx.Count).Mul()));
-                    
-                    Console.WriteLine("nb " + string.Join("," , tuples.Select(xx=>xx.Item2)));
-                    if (!tuples.Any())
-                    {
-                        return null;
-                    }
-
-                    var min = tuples.Min(cs => cs.Item2);
-                    var first = tuples.Where(cs => cs.Item2 == min).First().Item1;
-                    var els = first.Where(cs => cs.Count > 1).ToList();
-                    var limits = els.Select(e => e.Count).ToArray();
-                    var nbEls = els.Count;
-                    Console.WriteLine("depth : " + _depth + ", " + string.Join(" | " , els.Select(cs=>string.Join(", ", cs))));
-
-                    var save = new List<CaseSudoku>();
-                    foreach (var v in els)
-                    {
-                        save.Add(new CaseSudoku(v));
-                        v.Clear();
-                        v.Add(0);
-                    }
-
-                    var counters = new int[nbEls];
-                    
-                    IList<int> set = new List<int>();
-                    for (var iter=0;;)
-                    {
-                        set.Clear();
-                        var ok = true;
-                        for (var k = 0; k < nbEls; k++)
-                        {
-                            
-                            var v = save[k][counters[k]];
-                            if (set.Contains(v))
-                            {
-                                ok = false;
-                                break;
-                            }
-                            
-                            els[k][0] = v;
-                            set.Add(v);
-                        }
-
-//                        Console.WriteLine(string.Join(",", counters));
-                        if (ok && _depth<2)
-                        {
-                            Console.WriteLine("depth: " + _depth + ", iter : " + (iter++));
-                            Console.WriteLine(this);
-//                            Console.WriteLine("ok: " + string.Join(", ", set));
-                            var s = new Sudoku(this, _depth+1).Solve();
-                            if (s!=null)
-                            {
-                                return s;
-                            }
-                        }
-
-                        if (inc(counters, limits))
-                        {
-                            break;
-                        }
-                    }
-                    
-
-                    for (var i = 0; i < save.Count; i++)
-                    {
-                        els[i].Clear();
-                        els[i].AddRange(save[i]);
-                    }
-                    
                     return null;
+                    
+//                    var tuples = GetLists().Select(x =>
+//                        new Tuple<IList<CaseSudoku>, long?>(x,
+//                            x.Count(xx => xx.Count > 1)));
+//                    
+//                    Console.WriteLine("nb " + string.Join("," , tuples.Select(xx=>xx.Item2)));
+//                    if (!tuples.Any())
+//                    {
+//                        return null;
+//                    }
+//
+//                    var min = tuples.Max(cs => cs.Item2);
+//                    var first = tuples.First(cs => cs.Item2 == min).Item1;
+//                    foreach (var list in tuples)
+//                    {
+//                        Console.WriteLine(list.Item2);
+//                        var els = list.Item1.Where(cs => cs.Count > 1).ToList();
+//                        var alternatives = Iterate(els);
+//                        Console.WriteLine(string.Join(" | " , els.Select(cs=>string.Join(", ", cs))));
+//                        var merged = Merge(alternatives);
+//                        Console.WriteLine(string.Join(" | ", merged.Select(m=>string.Join(", ", m))));
+//                        Console.WriteLine("----------------");
+//                    }
+//
+//                    return null;
+//                    var els = first.Where(cs => cs.Count > 1).ToList();
+//                    var alternatives = Iterate(els);
+//                    Console.WriteLine("depth : " + _depth);
+//                    Console.WriteLine(string.Join(" | " , els.Select(cs=>string.Join(", ", cs))));
+////                    Console.WriteLine(string.Join("|", alternatives.Select(i => string.Join(",", i))));
+//
+//                    var merged = Merge(alternatives);
+//                    Console.WriteLine(string.Join(" | ", merged.Select(m=>string.Join(", ", m))));
+                    
+//                    var save = new List<CaseSudoku>();
+//                    foreach (var v in els)
+//                    {
+//                        save.Add(new CaseSudoku(v));
+//                        v.Clear();
+//                        v.Add(0);
+//                    }
+//
+//                    foreach (var entry in alternatives)
+//                    {
+//                        for (var i = 0; i < entry.Length; i++)
+//                        {
+//                            els[i][0] = entry[i];
+//                        } 
+//                        
+//                        var s = new Sudoku(this, _depth+1).Solve();
+//                        if (s!=null)
+//                        {
+//                            return s;
+//                        }
+//                    }
+//
+//                    for (var i = 0; i < save.Count; i++)
+//                    {
+//                        els[i].Clear();
+//                        els[i].AddRange(save[i]);
+//                    }
+//                    
+//                    return null;
                 }
 
                 c = newCount;
@@ -323,25 +308,125 @@ namespace sudoku
                 l[Status.Unsolved].ForEach(c=> c.RemoveAll(collect.Contains));
             }
 
+            foreach (var list in GetLists())
+            {
+                var notSolved = list.Where(cs => cs.Count > 1).ToList();
+                if (!notSolved.Any())
+                {
+                    continue;
+                }
+                var alternatives = Iterate(notSolved);
+                var merged = Merge(alternatives);
+
+                for (var k = 0; k < notSolved.Count; k++)
+                {
+                    if (notSolved[k].Count <= merged[k].Count)
+                    {
+                        continue;
+                    }
+                    
+                    notSolved[k].Clear();
+                    notSolved[k].AddRange(merged[k]);
+                }
+                
+            }
+            
             return Count();
 
         }
 
-        public bool Check()
+        private bool Check()
         {
             return _cases.All(c => c.Count == 1) 
                    && 
                    GetLists().All(list => list.Select(c => c[0]).Distinct().Count() == 9);
         }
 
-        public int Count()
+        private int Count()
         {
             return _cases.Select(c => c.Count).Sum();
         }
 
-        private static bool inc(int[] counters, int[] limits)
+
+        private static List<int[]> Iterate(IReadOnlyList<CaseSudoku> els)
         {
-            var nbEls = counters.Length;
+            var limits = els.Select(e => e.Count).ToArray();
+            var nbEls = els.Count;
+            var counters = new int[nbEls];
+
+            var list = new List<int[]>();
+            var used = new int[nbEls];
+            for (;;)
+            {
+                var ok = true;
+                for (var k = 0; k < nbEls; k++)
+                {
+
+                    var v = els[k][counters[k]];
+                    if (k != 0)
+                    {
+                        for (var l = 0; l < k; l++)
+                        {
+                            if (used[l] == v)
+                            {
+                                ok = false;
+                                break;
+                            }
+                        }    
+                    }
+
+                    if (!ok)
+                    {
+                        break;
+                    }
+
+                    used[k] = v;
+                }
+
+                if (ok)
+                {
+                    list.Add(used);
+                    used = new int[nbEls];
+                }
+
+                if (Inc(counters, limits))
+                {
+                    break;
+                }
+            }
+
+            return list;
+        }
+
+        private List<List<int>> Merge(IReadOnlyList<int[]> list)
+        {
+            var merged = new List<List<int>>();
+            
+            foreach (var ints in list)
+            {
+                if (merged.Count == 0)
+                {
+                    for (var k = 0; k < ints.Length; k++)
+                    {
+                        merged.Add(new List<int>());
+                    }
+                }
+                
+                for (var k = 0; k < ints.Length; k++)
+                {
+                    if (!merged[k].Contains(ints[k]))
+                    {
+                        merged[k].Add(ints[k]);
+                    }
+                }
+            }
+
+            return merged;
+        }
+        
+        private static bool Inc(IList<int> counters, IReadOnlyList<int> limits)
+        {
+            var nbEls = counters.Count;
             
             var k = 0 ;                
             for (; k < nbEls; k++)

@@ -46,18 +46,43 @@ namespace sudoku
 //                "xxx|x23|xx6\n" +
 //                "8xx|6xx|x2x";
             
-                "xxx|x14|xx9\n" +
-                "4x5|xxx|32x\n" +
-                "xx9|x3x|41x\n" +
+//                "xxx|x14|xx9\n" +
+//                "4x5|xxx|32x\n" +
+//                "xx9|x3x|41x\n" +
+//
+//                "xx2|64x|x7x\n" +
+//                "xxx|x8x|xxx\n" +
+//                "x6x|x29|5xx\n" +
+//
+//                "x54|x9x|1xx\n" +
+//                "x93|xxx|8x5\n" +
+//                "8xx|45x|xxx";
+            
+//                "6xx|7xx|x4x\n" +
+//                "x35|xx6|xxx\n" +
+//                "xxx|2xx|x3x\n" +
+//
+//                "9xx|x3x|xxx\n" +
+//                "xx8|1xx|xx7\n" +
+//                "x1x|xx5|2xx\n" +
+//
+//                "xxx|821|xx4\n" +
+//                "7xx|xxx|x1x\n" +
+//                "xx4|xxx|5xx";
+            
+                "xx6|7xx|1xx\n" +
+                "x8x|x6x|xx3\n" +
+                "9xx|4x1|x8x\n" +
 
-                "xx2|64x|x7x\n" +
-                "xxx|x8x|xxx\n" +
-                "x6x|x29|5xx\n" +
+                "xxx|x53|xxx\n" +
+                "2xx|xxx|x4x\n" +
+                "x7x|6xx|xx2\n" +
 
-                "x54|x9x|1xx\n" +
-                "x93|xxx|8x5\n" +
-                "8xx|45x|xxx";
+                "xxx|xx2|xx5\n" +
+                "xx4|x9x|x1x\n" +
+                "x9x|3xx|7xx";
 
+            
             List<int> els = new List<int> (new[] {1, 2, 3, 4, 5, 6, 7, 8, 9});
             var groupBy = els.GroupBy(c => c > 5 ? 0 : 1);
 

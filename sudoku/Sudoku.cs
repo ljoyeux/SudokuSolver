@@ -55,7 +55,7 @@ namespace sudoku
         private IList<IList<CaseSudoku>> _lists;
         private int _depth;
 
-        public Sudoku(Sudoku sudoku, int depth)
+        private Sudoku(Sudoku sudoku, int depth)
         {
 
             _depth = depth;
@@ -76,7 +76,7 @@ namespace sudoku
         }
         
         
-        public Sudoku(string grille = null)
+        public Sudoku(in string grille)
         {
             _lists = null;
             
@@ -89,14 +89,14 @@ namespace sudoku
                 }
             }
 
-            string[] lines = grille.Split('\n');
+            var lines = grille.Split('\n');
             for (var l = 0; l < 9; l++)
             {
-                string line = lines[l].Replace("|", "");
+                var line = lines[l].Replace("|", "");
 
                 for (var c = 0; c < 9; c++)
                 {
-                    char k = line[c];
+                    var k = line[c];
                     if (k >= '0' && k <= '9')
                     {
                         _cases[l*9+c].AddRange(new[] {k - '0'});
@@ -111,7 +111,7 @@ namespace sudoku
 
         public override string ToString()
         {
-            string str = "";
+            var str = "";
 
             for (var l = 0; l < 9; l++)
             {
@@ -193,7 +193,7 @@ namespace sudoku
             return _lists;
         }
 
-        enum Status
+        private enum Status
         {
             Solved, Unsolved
         }
@@ -203,8 +203,8 @@ namespace sudoku
             var c = Count();
             for (;;)
             {
-                var newCount = _Solve();
-                if (newCount == c)
+                var newCount = SolveStep1();
+                if (newCount == c && !SolveStep2())
                 {
                     if (Check())
                     {
@@ -276,7 +276,7 @@ namespace sudoku
             }
         }
         
-        private int _Solve()
+        private int SolveStep1()
         {
             foreach (var list in GetLists())
             {
@@ -297,7 +297,13 @@ namespace sudoku
                 var collect = l[Status.Solved].Select(c=>c[0]).ToList();
                 l[Status.Unsolved].ForEach(c=> c.RemoveAll(collect.Contains));
             }
+            
+            return Count();
+        }
 
+        private bool SolveStep2()
+        {
+            var changed = false;
             foreach (var list in GetLists())
             {
                 var notSolved = list.Where(cs => cs.Count > 1).ToList();
@@ -317,12 +323,12 @@ namespace sudoku
                     
                     notSolved[k].Clear();
                     notSolved[k].AddRange(merged[k]);
-                }
-                
-            }
-            
-            return Count();
 
+                    changed = true;
+                }
+            }
+
+            return changed;
         }
 
         private bool Check()

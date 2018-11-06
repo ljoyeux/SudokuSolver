@@ -83,21 +83,9 @@ namespace sudoku
                 "x9x|3xx|7xx";
 
             
-            List<int> els = new List<int> (new[] {1, 2, 3, 4, 5, 6, 7, 8, 9});
-            var groupBy = els.GroupBy(c => c > 5 ? 0 : 1);
-
-            var enumerators = groupBy.ToDictionary(x => x.Key, x => new List<int>(x.AsEnumerable()));
-            Console.WriteLine(string.Join(", ", enumerators[0]));
-            Console.WriteLine(string.Join(", ", enumerators[1]));
-
-//            List<int> collect = new List<int>(new[] {3, 4});
-//            els.RemoveAll(collect.Contains);
-//            Console.WriteLine(string.Join(",", els));
             
-            var sudoku = new Sudoku(s);
-            
-            Console.WriteLine(sudoku.Solve());
-//            Console.WriteLine(sudoku);
+            var sudoku = new Sudoku(s).Solve();
+            Console.WriteLine(sudoku);
         }
     }
 }

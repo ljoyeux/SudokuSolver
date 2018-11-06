@@ -1,38 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Globalization;
 using System.Linq;
-using System.Reflection.Metadata;
-using System.Security.Cryptography;
-using ExtensionMethods;
-
-namespace ExtensionMethods
-{
-    public static class EnumExtensions
-    {
-        public static long? Mul(this IEnumerable<int> source)
-        {
-            long? num1 = null;
-            foreach (var num2 in source)
-                checked { num1 = (num1!=null) ? num1*num2 : num2; }
-            return num1;
-        }
-
-//        public static T Min<T>(this IEnumerable<T> source, Func<T, long> selector)
-//        {
-//            var enumerator = source.GetEnumerator();
-//            T min = default(T);
-//            foreach (var i in source)
-//            {
-//            }
-//            
-//            return min;
-//        }
-        
-    }
-
-}
 
 namespace sudoku
 {
@@ -223,7 +191,6 @@ namespace sudoku
                         .Where(t=>t.Item2>0)
                         .ToList();
 
-//                    Console.WriteLine("nb " + string.Join("," , tuples.Select(xx=>xx.Item2)));
                     if (!tuples.Any())
                     {
                         return null;
@@ -280,14 +247,6 @@ namespace sudoku
         {
             foreach (var list in GetLists())
             {
-//                var unsolved = list.Where(c=>c.Count>1).ToList();
-//                if (unsolved.Count == 0)
-//                {
-//                    continue;
-//                }
-//                var collect = list.Where(c => c.Count == 1).Select(c=>c[0]).ToList();
-//                unsolved.ForEach(c=> c.RemoveAll(collect.Contains));
-
                 var l = list.GroupBy(c => c.Count == 1 ? Status.Solved : Status.Unsolved).ToDictionary(x => x.Key, x => x.AsEnumerable().ToList());
                 if (l.Count == 1)
                 {

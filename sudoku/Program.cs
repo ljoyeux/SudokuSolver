@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace sudoku
@@ -8,7 +9,6 @@ namespace sudoku
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
             string s =
 //                "xxx|4x5|xx1\n" +
 //                "6x5|198|xxx\n" +
@@ -82,10 +82,15 @@ namespace sudoku
                 "xx4|x9x|x1x\n" +
                 "x9x|3xx|7xx";
 
+
+            var stopwatch = new Stopwatch();
             
-            
+            stopwatch.Start();
             var sudoku = new Sudoku(s).Solve();
+            stopwatch.Stop();
+            
             Console.WriteLine(sudoku);
+            Console.WriteLine("Elapsed: {0}", stopwatch.ElapsedMilliseconds);
         }
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -172,7 +173,7 @@ namespace sudoku
             for (;;)
             {
                 var newCount = SolveStep1();
-                if (newCount == c && !SolveStep2())
+                if (newCount == c)
                 {
                     if (Check())
                     {
@@ -260,36 +261,6 @@ namespace sudoku
             return Count();
         }
 
-        private bool SolveStep2()
-        {
-            var changed = false;
-            foreach (var list in GetLists())
-            {
-                var notSolved = list.Where(cs => cs.Count > 1).ToList();
-                if (!notSolved.Any())
-                {
-                    continue;
-                }
-                var alternatives = Iterate(notSolved);
-                var merged = Merge(alternatives);
-
-                for (var k = 0; k < notSolved.Count; k++)
-                {
-                    if (notSolved[k].Count <= merged[k].Count)
-                    {
-                        continue;
-                    }
-                    
-                    notSolved[k].Clear();
-                    notSolved[k].AddRange(merged[k]);
-
-                    changed = true;
-                }
-            }
-
-            return changed;
-        }
-
         private bool Check()
         {
             return _cases.All(c => c.Count == 1) 
@@ -351,32 +322,6 @@ namespace sudoku
             }
 
             return list;
-        }
-
-        private static List<List<int>> Merge(in IReadOnlyList<int[]> list)
-        {
-            var merged = new List<List<int>>();
-            
-            foreach (var ints in list)
-            {
-                if (merged.Count == 0)
-                {
-                    for (var k = 0; k < ints.Length; k++)
-                    {
-                        merged.Add(new List<int>());
-                    }
-                }
-                
-                for (var k = 0; k < ints.Length; k++)
-                {
-                    if (!merged[k].Contains(ints[k]))
-                    {
-                        merged[k].Add(ints[k]);
-                    }
-                }
-            }
-
-            return merged;
         }
         
         private static bool Inc(in IList<int> counters, in IReadOnlyList<int> limits)

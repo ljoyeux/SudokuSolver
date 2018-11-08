@@ -200,7 +200,6 @@ namespace sudoku
                     var min = tuples.Min(cs => cs.Item2);
                     var first = tuples.First(cs => cs.Item2 == min).Item1;
                     var els = first.Where(cs => cs.Count > 1).ToList();
-                    var alternatives = Iterate(els);
                     
                     if (_depth > 30)
                     {
@@ -216,6 +215,9 @@ namespace sudoku
                         v.Clear();
                         v.Add(0);
                     }
+                    
+                    // using IEnumerable<int[]>. The method is not executed here, but in the enumeration.
+                    var alternatives = Iterate(save);
                     
                     foreach (var entry in alternatives)
                     {
@@ -274,13 +276,12 @@ namespace sudoku
         }
 
 
-        private static List<int[]> Iterate(in IReadOnlyList<CaseSudoku> els)
+        private static IEnumerable<int[]> Iterate(IReadOnlyList<CaseSudoku> els)
         {
             var limits = els.Select(e => e.Count).ToArray();
             var nbEls = els.Count;
             var counters = new int[nbEls];
 
-            var list = new List<int[]>();
             var used = new int[nbEls];
             for (;;)
             {
@@ -311,17 +312,15 @@ namespace sudoku
 
                 if (ok)
                 {
-                    list.Add(used);
+                    yield return used;
                     used = new int[nbEls];
                 }
 
                 if (Inc(counters, limits))
                 {
-                    break;
+                    yield break;
                 }
             }
-
-            return list;
         }
         
         private static bool Inc(in IList<int> counters, in IReadOnlyList<int> limits)
